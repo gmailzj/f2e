@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title>json格式化工具</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="googlebot" content="noindex, nofollow">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/bootstrap@4.1.3/dist/css/bootstrap.css">
+  <style type="text/css">
+    .wrapper {
+
+      margin: 40px;
+      margin-bottom: 100px;
+    }
+
+    .input {
+      width: 50px;
+      text-align: right;
+      border-radius: 0px;
+    }
+
+    .condition {
+      margin-bottom: 20px;
+    }
+
+    .form-check-label {
+      margin-right: 40px;
+    }
+
+    .form-check-input {
+      /* margin-left:40px; */
+    }
+
+    #result1,
+    #result2 {
+      margin: 5px 40px;
+    }
+  </style>
+
+  <script type="text/javascript">
+    
+    window.onload = function () {
+      window.colunms = [];
+      function checkDataType(json){
+        // var colunms = [];
+        var colunmsLen = 0;
+        var columnsValue= {};
+        for(var i in json[0]){
+          console.log(i)
+          colunms.push(i);
+          colunmsLen++
+        }
+        for(var i=0;i<json.length;i++){
+          var item = json[i];
+          for(var j=0;j<colunmsLen;j++){
+            var key = colunms[j];
+            var value = item[key];
+            columnsValue[key] == null && (columnsValue[key] =[]);
+            columnsValue[key].push(value);
+          }
+        }
+
+        var columnsType = {};
+        for(var key in columnsValue){
+          var values = columnsValue[key];
+          columnsType[key] = typeof values[0];
+          for(var i=0, len= values.length;i<len-1;i++){
+              if(typeof values[i] != typeof values[i+1]){
+                columnsType[key] = 'string';
+                break;
+              }
+          }
+
+        }
+        // console.log(columnsType)
+        return columnsType;
+      }
+
+      // 格式化检测
+      window.calc = function () {
+        var jsonTxt = document.getElementById("jsonSrcTxt").value
+        jsonTxt = jsonTxt.trim();
+        if(jsonTxt.length == 0){
+          document.getElementById("warnWrap").innerHTML = "请输入json字符串";
+          return
+        }
+
+        var json = null;
+        try {
+          json = JSON.parse(jsonTxt)
+        } catch (e) {
+          console.log(e)
+          document.getElementById("warnWrap").innerHTML = "json格式错误";
+          return
+        } 
+
+        var columnType = checkDataType(json)
+        console.log(columnType);
+        
+
+        for(var i=0;i<json.length;i++){
+          var item = json[i];
+          for(var j in item){
+            var value = item[j];
+            if(columnType[j] == 'string'){
+              item[j] = value+"";
+            }
+          }
+        }
+        console.log(json);
+        jsonTxt = JSON.stringify(json,null,2);
+        document.getElementById("result").value = jsonTxt;
+      }
+
+      // 清空
+      window.clearText = function () {
+        document.getElementById("jsonSrcTxt").value = '';
+      }
+
+      // 示例
+      window.setText = function () {
+        var str = `
+        [
+          {
+              "id": 1,
+              "tags": "2,3",
+              "name": "lake",
+              "age": 20
+          },
+          {
+              "id": 2,
+              "tags": "4,5",
+              "name": "周周",
+              "age": 30
+          },
+          {
+              "id": 3,
+              "tags": 6,
+              "name": "123大大",
+              "age": 140
+          }
+      ]`;
+      document.getElementById("jsonSrcTxt").value = str
+      }
+
+    }
+  </script>
+
+</head>
+
+<body>
+  <div class="wrapper">
+    <h2>json格式化工具</h2>
+    <hr>
+    <div class="condition">
+      <h6>输入json字符串</h6>
+      <textarea value="49" id="jsonSrcTxt" rows="10" cols="50"></textarea>
+    </div>
+    <p>
+      <button type="button" class="btn btn-primary" onclick="calc()">格式化</button> 
+      <button type="button" class="btn btn-warn" onclick="clearText()">清空</button>
+      <button type="button" class="btn btn-warn" onclick="setText()">示例</button>
+    </p>
+    <h6>输出json字符串</h6>
+
+    <textarea value="49" id="result" rows="10" cols="50"></textarea>
+    <div id="warnWrap" style="color: brown;"></div>
+  </div>
+
+  </div>
+
+
+</body>
+
+</html>
