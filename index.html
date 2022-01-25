@@ -41,10 +41,23 @@
   </style>
 
   <script type="text/javascript">
+
+    function checkNumber(theObj) {
+      var reg = /^[0-9]+\.?[0-9]*$/;
+      if (reg.test(theObj)) {
+        return true;
+      }
+      return false;
+    }
     
     window.onload = function () {
       window.colunms = [];
       function checkDataType(json){
+        window.colunms = []
+        console.log(json)
+        var chkForceNumValue = document.getElementById("chkForceNum").checked;
+        console.log(chkForceNumValue);
+
         // var colunms = [];
         var colunmsLen = 0;
         var columnsValue= {};
@@ -66,14 +79,20 @@
         var columnsType = {};
         for(var key in columnsValue){
           var values = columnsValue[key];
-          columnsType[key] = typeof values[0];
           for(var i=0, len= values.length;i<len-1;i++){
+            if(chkForceNumValue){
+              columnsType[key] = 'number';
+              if(!checkNumber(values[i])){
+                columnsType[key] = 'string';
+              }
+              break;
+            } else {
               if(typeof values[i] != typeof values[i+1]){
                 columnsType[key] = 'string';
                 break;
               }
-          }
-
+            }
+          }          
         }
         // console.log(columnsType)
         return columnsType;
@@ -81,6 +100,9 @@
 
       // 格式化检测
       window.calc = function () {
+        var chkForceNumValue = document.getElementById("chkForceNum").checked;
+        console.log(chkForceNumValue);
+
         var jsonTxt = document.getElementById("jsonSrcTxt").value
         jsonTxt = jsonTxt.trim();
         if(jsonTxt.length == 0){
@@ -101,13 +123,22 @@
         console.log(columnType);
         
 
+        
+
         for(var i=0;i<json.length;i++){
           var item = json[i];
           for(var j in item){
             var value = item[j];
             if(columnType[j] == 'string'){
-              item[j] = value+"";
+              item[j] = (value+"").trim();
+            } else {
+              if(chkForceNumValue){
+                if(checkNumber(item[j])){
+                  item[j] = +item[j];
+                }
+              }
             }
+            
           }
         }
         console.log(json);
@@ -118,6 +149,8 @@
       // 清空
       window.clearText = function () {
         document.getElementById("jsonSrcTxt").value = '';
+        document.getElementById("result").value = '';
+        document.getElementById("warnWrap").innerHTML = '';
       }
 
       // 示例
@@ -164,6 +197,8 @@
       <button type="button" class="btn btn-primary" onclick="calc()">格式化</button> 
       <button type="button" class="btn btn-warn" onclick="clearText()">清空</button>
       <button type="button" class="btn btn-warn" onclick="setText()">示例</button>
+      <input type="checkbox" class="" id="chkForceNum">
+        <label class="form-check-label" for="chk_1">`数字字符串`强转为数字</label>
     </p>
     <h6>输出json字符串</h6>
 
